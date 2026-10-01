@@ -1,4 +1,3 @@
-cat > index.php << 'EOF'
 <?php
 require_once __DIR__ . "/config.php";
 
@@ -10,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['task'])) {
     exit;
 }
 
-// Tanda selesai
+// Tandai selesai
 if (isset($_GET['complete'])) {
     $id = (int)$_GET['complete'];
     mysqli_query($conn, "UPDATE todos SET status='done' WHERE id=$id");
@@ -59,13 +58,12 @@ $result = mysqli_query($conn, "SELECT * FROM todos ORDER BY created_at DESC");
                 </span>
                 <span>
                     <?php if ($row['status'] !== 'done'): ?>
-                        <a href="?complete=<?= $row['id'] ?>">✓</a>
+                        <a href="?complete=<?= $row['id'] ?>">✔</a>
                     <?php endif; ?>
-                    <a href="?delete=<?= $row['id'] ?>">×</a>
+                    <a href="?delete=<?= $row['id'] ?>">x</a>
                 </span>
             </li>
         <?php endwhile; ?>
     </ul>
 </body>
 </html>
-EOF

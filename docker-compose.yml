@@ -1,0 +1,34 @@
+services:
+  web:
+    build: .
+    container_name: todo_web
+    ports:
+      - "8080:80"
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASS: ${DB_PASSWORD}
+      DB_NAME: todo_db
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    container_name: todo_db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: todo_db
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  db_data:
