@@ -2,8 +2,8 @@
 require_once __DIR__ . "/config.php";
 
 // Tambah todo baru
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['task'])) {
-    $task = mysqli_real_escape_string($conn, $_POST['task']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['task']) && trim($_POST['task']) !== '') {
+    $task = mysqli_real_escape_string($conn, trim($_POST['task']));
     mysqli_query($conn, "INSERT INTO todos (task, status) VALUES ('$task', 'pending')");
     header("Location: index.php");
     exit;
