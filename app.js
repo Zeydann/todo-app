@@ -171,20 +171,22 @@ function updateStats(rows) {
 fetchRows();
 
 /* ─────────────────────────────────────
-   TO-DO LIST
+   TO-DO LIST (MySQL via API)
 ───────────────────────────────────── */
 
-let todos = load('wp_todos', [
-  { text: 'Review laporan Q2',            done: false },
-  { text: 'Kirim email follow-up klien',  done: true  },
-  { text: 'Update dokumentasi proyek',    done: false },
-]);
+let todos = [];
+
+async function fetchTodos() {
+  const res = await fetch('/weeklyplanner/api/todos.php');
+  todos = await res.json();
+  renderTodos();
+}
 
 function renderTodos() {
   const container = $('todoList');
   container.innerHTML = '';
 
-  todos.forEach((todo, index) => {
+  todos.forEach((todo) => {
     const div = document.createElement('div');
     div.className = 'todo-item';
 
@@ -192,51 +194,61 @@ function renderTodos() {
       <input
         type="checkbox"
         class="todo-check"
-        ${todo.done ? 'checked' : ''}
-        onchange="toggleTodo(${index})"
+        ${todo.done == 1 ? 'checked' : ''}
+        onchange="toggleTodo(${todo.id}, this.checked)"
       />
       <input
-        class="todo-text${todo.done ? ' done' : ''}"
+        class="todo-text${todo.done == 1 ? ' done' : ''}"
         type="text"
         value="${todo.text.replace(/"/g, '&quot;')}"
         placeholder="Nama tugas..."
-        onchange="editTodo(${index}, this.value)"
+        onchange="editTodo(${todo.id}, this.value)"
       />
-      <button class="del-btn" onclick="delTodo(${index})" title="Hapus">×</button>
+      <button class="del-btn" onclick="delTodo(${todo.id})" title="Hapus">×</button>
     `;
 
     container.appendChild(div);
   });
-
-  save('wp_todos', todos);
 }
 
-function toggleTodo(index) {
-  todos[index].done = !todos[index].done;
-  renderTodos();
+async function toggleTodo(id, checked) {
+  await fetch('/weeklyplanner/api/todos.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, field: 'done', value: checked ? 1 : 0 })
+  });
+  await fetchTodos();
 }
 
-function editTodo(index, value) {
-  todos[index].text = value;
-  save('wp_todos', todos);
+async function editTodo(id, value) {
+  await fetch('/weeklyplanner/api/todos.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, field: 'text', value })
+  });
+  await fetchTodos();
 }
 
-function delTodo(index) {
-  todos.splice(index, 1);
-  renderTodos();
+async function delTodo(id) {
+  await fetch('/weeklyplanner/api/todos.php', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id })
+  });
+  await fetchTodos();
 }
 
-function addTodo() {
-  todos.push({ text: '', done: false });
-  renderTodos();
+async function addTodo() {
+  await fetch('/weeklyplanner/api/todos.php', { method: 'POST' });
+  await fetchTodos();
   setTimeout(() => {
     const inputs = document.querySelectorAll('.todo-text');
     if (inputs.length) inputs[inputs.length - 1].focus();
   }, 50);
 }
 
-// Initial render
-renderTodos();
+// Initial fetch
+fetchTodos();
 
 /* ─────────────────────────────────────
    NOTES
