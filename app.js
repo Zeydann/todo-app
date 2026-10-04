@@ -6,17 +6,14 @@
    UTILS
 ───────────────────────────────────── */
 
-/** Shorthand getElementById */
 function $(id) {
   return document.getElementById(id);
 }
 
-/** Save data to localStorage as JSON */
 function save(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
-/** Load data from localStorage, return defaultValue if not found */
 function load(key, defaultValue) {
   try {
     const item = localStorage.getItem(key);
@@ -33,12 +30,10 @@ function load(key, defaultValue) {
 function initDateHeader() {
   const now = new Date();
 
-  // Full date label
   const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
   $('dateLabel').textContent = now.toLocaleDateString('id-ID', opts);
 
-  // Week range badge (Mon–Sun)
-  const dayOfWeek = now.getDay(); // 0=Sun
+  const dayOfWeek = now.getDay();
   const diffToMon = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
   const monday = new Date(now);
   monday.setDate(now.getDate() + diffToMon);
@@ -62,12 +57,12 @@ quoteEl.value = load('wp_quote', DEFAULT_QUOTE);
 quoteEl.addEventListener('input', () => save('wp_quote', quoteEl.value));
 
 /* ─────────────────────────────────────
-   WEEKLY TABLE
+   WEEKLY TABLE (MySQL via API)
 ───────────────────────────────────── */
 
 const DAYS = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+let weeklyRows = [];
 
-/** Generate time options from 05:00 to 22:00 */
 function generateTimeOptions(selectedTime) {
   let options = '';
   for (let hour = 5; hour <= 22; hour++) {
@@ -77,51 +72,34 @@ function generateTimeOptions(selectedTime) {
   return options;
 }
 
-const DEFAULT_ROWS = [
-  { day: 'Senin',  time: '09:00', act: 'Morning review + cek email',           status: 'done'     },
-  { day: 'Selasa', time: '10:00', act: 'Deep work — project utama',            status: 'progress' },
-  { day: 'Rabu',   time: '14:00', act: 'Meeting tim & planning sprint',        status: 'none'     },
-  { day: 'Kamis',  time: '15:00', act: 'Belajar skill baru / reading',         status: 'none'     },
-  { day: 'Jumat',  time: '16:00', act: 'Weekly review & rencana minggu depan', status: 'none'     },
-];
-
-/** Get current rows from localStorage */
-function getRows() {
-  const rows = load('wp_rows', DEFAULT_ROWS);
-  // Ensure all rows have time field
-  return rows.map(row => ({ time: '09:00', ...row }));
-}
-
-/** Save rows to localStorage */
-function saveRows(rows) {
-  save('wp_rows', rows);
-}
-
-/** Return CSS class for row based on status */
 function rowClass(status) {
   if (status === 'done')     return 'row-done';
   if (status === 'progress') return 'row-prog';
   return '';
 }
 
-/** Build and insert all table rows into the DOM */
+async function fetchRows() {
+  const res = await fetch('/weeklyplanner/api/weekly.php');
+  weeklyRows = await res.json();
+  renderRows();
+}
+
 function renderRows() {
-  const rows = getRows();
   const tbody = $('weekBody');
   tbody.innerHTML = '';
 
-  rows.forEach((row, index) => {
+  weeklyRows.forEach((row) => {
     const tr = document.createElement('tr');
     tr.className = rowClass(row.status);
 
     tr.innerHTML = `
       <td>
-        <select class="time-select" onchange="changeField(${index}, 'time', this.value)">
+        <select class="time-select" onchange="changeField(${row.id}, 'time', this.value)">
           ${generateTimeOptions(row.time)}
         </select>
       </td>
       <td>
-        <select class="day-select" onchange="changeField(${index}, 'day', this.value)">
+        <select class="day-select" onchange="changeField(${row.id}, 'day', this.value)">
           ${DAYS.map(d => `<option${d === row.day ? ' selected' : ''}>${d}</option>`).join('')}
         </select>
       </td>
@@ -129,54 +107,52 @@ function renderRows() {
         <input
           class="act-input"
           type="text"
-          value="${row.act.replace(/"/g, '&quot;')}"
+          value="${row.activity.replace(/"/g, '&quot;')}"
           placeholder="Tambahkan aktivitas..."
-          onchange="changeField(${index}, 'act', this.value)"
+          onchange="changeField(${row.id}, 'activity', this.value)"
         />
       </td>
       <td>
-        <select class="status-select" onchange="changeField(${index}, 'status', this.value)">
+        <select class="status-select" onchange="changeField(${row.id}, 'status', this.value)">
           <option value="none"${row.status === 'none'     ? ' selected' : ''}>— Belum</option>
           <option value="progress"${row.status === 'progress' ? ' selected' : ''}>● On-going</option>
           <option value="done"${row.status === 'done'     ? ' selected' : ''}>✓ Selesai</option>
         </select>
       </td>
       <td>
-        <button class="del-btn" onclick="delRow(${index})" title="Hapus">×</button>
+        <button class="del-btn" onclick="delRow(${row.id})" title="Hapus">×</button>
       </td>
     `;
 
     tbody.appendChild(tr);
   });
 
-  updateStats(rows);
+  updateStats(weeklyRows);
 }
 
-/** Update a single field for a row */
-function changeField(index, field, value) {
-  const rows = getRows();
-  rows[index][field] = value;
-  saveRows(rows);
-  renderRows();
+async function changeField(id, field, value) {
+  await fetch('/weeklyplanner/api/weekly.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, field, value })
+  });
+  await fetchRows();
 }
 
-/** Delete a row by index */
-function delRow(index) {
-  const rows = getRows();
-  rows.splice(index, 1);
-  saveRows(rows);
-  renderRows();
+async function delRow(id) {
+  await fetch('/weeklyplanner/api/weekly.php', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id })
+  });
+  await fetchRows();
 }
 
-/** Add an empty row */
-function addRow() {
-  const rows = getRows();
-  rows.push({ day: 'Senin', time: '09:00', act: '', status: 'none' });
-  saveRows(rows);
-  renderRows();
+async function addRow() {
+  await fetch('/weeklyplanner/api/weekly.php', { method: 'POST' });
+  await fetchRows();
 }
 
-/** Recalculate and render progress stats */
 function updateStats(rows) {
   const done  = rows.filter(r => r.status === 'done').length;
   const prog  = rows.filter(r => r.status === 'progress').length;
@@ -191,8 +167,8 @@ function updateStats(rows) {
   $('progRight').textContent = done + ' / ' + rows.length + ' task selesai';
 }
 
-// Initial render
-renderRows();
+// Initial fetch
+fetchRows();
 
 /* ─────────────────────────────────────
    TO-DO LIST
@@ -204,7 +180,6 @@ let todos = load('wp_todos', [
   { text: 'Update dokumentasi proyek',    done: false },
 ]);
 
-/** Build and insert all todo items into the DOM */
 function renderTodos() {
   const container = $('todoList');
   container.innerHTML = '';
@@ -254,7 +229,6 @@ function delTodo(index) {
 function addTodo() {
   todos.push({ text: '', done: false });
   renderTodos();
-  // Auto-focus the new input
   setTimeout(() => {
     const inputs = document.querySelectorAll('.todo-text');
     if (inputs.length) inputs[inputs.length - 1].focus();
@@ -276,11 +250,11 @@ notesEl.addEventListener('input', () => save('wp_notes', notesEl.value));
    POMODORO TIMER
 ───────────────────────────────────── */
 
-let pomoSeconds  = 25 * 60;  // current countdown in seconds
+let pomoSeconds  = 25 * 60;
 let pomoRunning  = false;
 let pomoInterval = null;
 let pomoSessions = 0;
-let pomoMode     = 'focus';  // 'focus' | 'short' | 'long'
+let pomoMode     = 'focus';
 
 const MODE_LABELS = {
   focus: 'Fokus',
@@ -288,14 +262,12 @@ const MODE_LABELS = {
   long:  'Istirahat Panjang',
 };
 
-/** Format seconds into MM:SS string */
 function formatTime(seconds) {
   const m = String(Math.floor(seconds / 60)).padStart(2, '0');
   const s = String(seconds % 60).padStart(2, '0');
   return `${m}:${s}`;
 }
 
-/** Update the timer display and browser tab title */
 function updatePomoDisplay() {
   $('pomoTime').textContent = formatTime(pomoSeconds);
   document.title = pomoRunning
@@ -303,9 +275,7 @@ function updatePomoDisplay() {
     : 'Weekly Planner';
 }
 
-/** Switch between focus / short break / long break */
 function setMode(mode, minutes, buttonEl) {
-  // Stop any running timer
   clearInterval(pomoInterval);
   pomoRunning = false;
 
@@ -313,33 +283,27 @@ function setMode(mode, minutes, buttonEl) {
   startBtn.textContent = 'Mulai';
   startBtn.classList.remove('active');
 
-  // Update state
   pomoMode    = mode;
   pomoSeconds = minutes * 60;
 
-  // Update badge label
   $('pomoModeBadge').textContent = MODE_LABELS[mode];
 
-  // Update selected mode button
   document.querySelectorAll('.pomo-mode-btn').forEach(b => b.classList.remove('selected'));
   if (buttonEl) buttonEl.classList.add('selected');
 
   updatePomoDisplay();
 }
 
-/** Start or pause the timer */
 function togglePomo() {
   const startBtn = $('btnStart');
 
   if (pomoRunning) {
-    // Pause
     clearInterval(pomoInterval);
     pomoRunning = false;
     startBtn.textContent = 'Lanjut';
     startBtn.classList.remove('active');
     document.title = 'Weekly Planner';
   } else {
-    // Start
     pomoRunning = true;
     startBtn.textContent = 'Pause';
     startBtn.classList.add('active');
@@ -349,7 +313,6 @@ function togglePomo() {
         pomoSeconds--;
         updatePomoDisplay();
       } else {
-        // Timer finished
         clearInterval(pomoInterval);
         pomoRunning = false;
         startBtn.textContent = 'Mulai';
@@ -373,7 +336,6 @@ function togglePomo() {
   }
 }
 
-/** Reset timer to the current mode's default duration */
 function resetPomo() {
   clearInterval(pomoInterval);
   pomoRunning = false;
@@ -389,10 +351,8 @@ function resetPomo() {
   document.title = 'Weekly Planner';
 }
 
-// Initial display
 updatePomoDisplay();
 
-// Request browser notification permission on first user interaction
 document.addEventListener('click', function requestNotif() {
   if (Notification && Notification.permission === 'default') {
     Notification.requestPermission();
