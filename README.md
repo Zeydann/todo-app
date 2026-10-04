@@ -18,6 +18,14 @@ A weekly planner web app — plan your week, track a to-do list, jot notes, and 
 - **Daily quote** — a motivational quote card
 - **Pomodoro timer** — focus/break session timer
 
+## Screenshots
+![Desktop view](screenshots/desktop-view.png)
+![Mobile view](screenshots/mobile-view.png)
+
+## Credits
+
+UI/UX design based on [weekly-planner](https://github.com/ressaudy/weekly-planner) by [ressaudy](https://github.com/ressaudy).
+
 ## Running Locally
 
 1. Clone this repo
