@@ -1,18 +1,22 @@
-# To-Do List App
+# Weekly Planner
 
-Simple to-do list web app built with PHP and MySQL, containerized with Docker, and deployed behind Nginx + Tailscale Funnel.
+A weekly planner web app — plan your week, track a to-do list, jot notes, and stay focused with a built-in Pomodoro timer. Built with PHP and MySQL, containerized with Docker, deployed behind Nginx and Tailscale Funnel.
 
 ## Tech Stack
 - PHP 8.2 (Apache)
 - MySQL 8.0
+- Vanilla JS (no framework)
 - Docker & Docker Compose
 - Nginx (reverse proxy)
 - Tailscale Funnel (public HTTPS access)
 
 ## Features
-- Add, complete, and delete tasks
-- Persistent storage via MySQL
-- Fully containerized setup
+- **Weekly Plan table** — schedule activities by day and time, track status (pending/on-going/done)
+- **Progress tracker** — visual completion stats for the week
+- **To-do list** — quick task checklist
+- **Notes** — freeform notes area
+- **Daily quote** — a motivational quote card
+- **Pomodoro timer** — focus/break session timer
 
 ## Running Locally
 
@@ -28,8 +32,14 @@ Simple to-do list web app built with PHP and MySQL, containerized with Docker, a
 4. Access at `http://localhost:8080`
 
 ## Project Structure
-- `index.php` — main app logic & UI
+- `index.php` — main page markup
+- `app.js` — frontend logic (weekly table, todos, notes, pomodoro)
+- `style.css` — styling
 - `config.php` — database connection
-- `init.sql` — database schema
+- `sql/init.sql` — database schema
 - `Dockerfile` — PHP + Apache container definition
 - `docker-compose.yml` — multi-container orchestration (web + db)
+- `legacy/` — reference files from the previous simple to-do list version (not deployed)
+
+## Status
+Currently migrating from localStorage-based storage to MySQL-backed persistence. See commit history for progress.

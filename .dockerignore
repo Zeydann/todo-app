@@ -1,0 +1,5 @@
+legacy/
+.git
+.gitignore
+.env
+README.md
