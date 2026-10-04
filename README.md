@@ -41,5 +41,10 @@ A weekly planner web app — plan your week, track a to-do list, jot notes, and 
 - `docker-compose.yml` — multi-container orchestration (web + db)
 - `legacy/` — reference files from the previous simple to-do list version (not deployed)
 
+## API Endpoints
+- `GET/POST/DELETE /api/weekly.php` — weekly plan rows
+- `GET/POST/DELETE /api/todos.php` — to-do list items
+- `GET/POST /api/settings.php` — quote & notes (key-value)
+
 ## Status
-Currently migrating from localStorage-based storage to MySQL-backed persistence. See commit history for progress.
+Fully migrated to MySQL-backed persistence. All data (weekly plan, to-do list, notes, quote) syncs across devices. Pomodoro timer remains session-only (client-side), by design.

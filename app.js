@@ -10,19 +10,6 @@ function $(id) {
   return document.getElementById(id);
 }
 
-function save(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
-function load(key, defaultValue) {
-  try {
-    const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : defaultValue;
-  } catch (e) {
-    return defaultValue;
-  }
-}
-
 /* ─────────────────────────────────────
    DATE HEADER
 ───────────────────────────────────── */
