@@ -47,14 +47,40 @@ function initDateHeader() {
 initDateHeader();
 
 /* ─────────────────────────────────────
-   QUOTE HARIAN
+   QUOTE HARIAN & NOTES (MySQL via API)
 ───────────────────────────────────── */
 
-const DEFAULT_QUOTE = '"The secret of getting ahead is getting started." — Mark Twain';
-
 const quoteEl = $('quoteInput');
-quoteEl.value = load('wp_quote', DEFAULT_QUOTE);
-quoteEl.addEventListener('input', () => save('wp_quote', quoteEl.value));
+const notesEl = $('notesArea');
+
+async function fetchSettings() {
+  const res = await fetch('/weeklyplanner/api/settings.php');
+  const data = await res.json();
+  quoteEl.value = data.quote || '';
+  notesEl.value = data.notes || '';
+}
+
+async function saveSetting(key, value) {
+  await fetch('/weeklyplanner/api/settings.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key, value })
+  });
+}
+
+let quoteDebounce, notesDebounce;
+
+quoteEl.addEventListener('input', () => {
+  clearTimeout(quoteDebounce);
+  quoteDebounce = setTimeout(() => saveSetting('quote', quoteEl.value), 500);
+});
+
+notesEl.addEventListener('input', () => {
+  clearTimeout(notesDebounce);
+  notesDebounce = setTimeout(() => saveSetting('notes', notesEl.value), 500);
+});
+
+fetchSettings();
 
 /* ─────────────────────────────────────
    WEEKLY TABLE (MySQL via API)
@@ -249,14 +275,6 @@ async function addTodo() {
 
 // Initial fetch
 fetchTodos();
-
-/* ─────────────────────────────────────
-   NOTES
-───────────────────────────────────── */
-
-const notesEl = $('notesArea');
-notesEl.value = load('wp_notes', '');
-notesEl.addEventListener('input', () => save('wp_notes', notesEl.value));
 
 /* ─────────────────────────────────────
    POMODORO TIMER
