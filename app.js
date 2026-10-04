@@ -105,38 +105,37 @@ function renderRows() {
     const tr = document.createElement('tr');
     tr.className = rowClass(row.status);
 
-    tr.innerHTML = `
-      <td>
-        <select class="time-select" onchange="changeField(${row.id}, 'time', this.value)">
-          ${generateTimeOptions(row.time)}
-        </select>
-      </td>
-      <td>
-        <select class="day-select" onchange="changeField(${row.id}, 'day', this.value)">
-          ${DAYS.map(d => `<option${d === row.day ? ' selected' : ''}>${d}</option>`).join('')}
-        </select>
-      </td>
-      <td>
-        <input
-          class="act-input"
-          type="text"
-          value="${row.activity.replace(/"/g, '&quot;')}"
-          placeholder="Tambahkan aktivitas..."
-          onchange="changeField(${row.id}, 'activity', this.value)"
-        />
-      </td>
-      <td>
-        <select class="status-select" onchange="changeField(${row.id}, 'status', this.value)">
-          <option value="none"${row.status === 'none'     ? ' selected' : ''}>— Belum</option>
-          <option value="progress"${row.status === 'progress' ? ' selected' : ''}>● On-going</option>
-          <option value="done"${row.status === 'done'     ? ' selected' : ''}>✓ Selesai</option>
-        </select>
-      </td>
-      <td>
-        <button class="del-btn" onclick="delRow(${row.id})" title="Hapus">×</button>
-      </td>
-    `;
-
+tr.innerHTML = `
+  <td data-label="Waktu">
+    <select class="time-select" onchange="changeField(${row.id}, 'time', this.value)">
+      ${generateTimeOptions(row.time)}
+    </select>
+  </td>
+  <td data-label="Hari">
+    <select class="day-select" onchange="changeField(${row.id}, 'day', this.value)">
+      ${DAYS.map(d => `<option${d === row.day ? ' selected' : ''}>${d}</option>`).join('')}
+    </select>
+  </td>
+  <td data-label="Aktivitas">
+    <input
+      class="act-input"
+      type="text"
+      value="${row.activity.replace(/"/g, '&quot;')}"
+      placeholder="Tambahkan aktivitas..."
+      onchange="changeField(${row.id}, 'activity', this.value)"
+    />
+  </td>
+  <td data-label="Status">
+    <select class="status-select" onchange="changeField(${row.id}, 'status', this.value)">
+      <option value="none"${row.status === 'none'     ? ' selected' : ''}>— Belum</option>
+      <option value="progress"${row.status === 'progress' ? ' selected' : ''}>● On-going</option>
+      <option value="done"${row.status === 'done'     ? ' selected' : ''}>✓ Selesai</option>
+    </select>
+  </td>
+  <td data-label="">
+    <button class="del-btn" onclick="delRow(${row.id})" title="Hapus">×</button>
+  </td>
+`;
     tbody.appendChild(tr);
   });
 
