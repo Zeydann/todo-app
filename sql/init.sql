@@ -1,3 +1,4 @@
+SET NAMES utf8mb4;
 -- Weekly Plan table
 CREATE TABLE IF NOT EXISTS weekly_rows (
     id INT AUTO_INCREMENT PRIMARY KEY,

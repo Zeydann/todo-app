@@ -5,6 +5,7 @@ $pass = getenv('DB_PASS') ?: '';
 $dbname = getenv('DB_NAME') ?: 'todo_db';
 
 $conn = mysqli_connect($host, $user, $pass, $dbname);
+mysqli_set_charset($conn, "utf8mb4");
 
 if (!$conn) {
     die("Koneksi gagal: " . mysqli_connect_error());

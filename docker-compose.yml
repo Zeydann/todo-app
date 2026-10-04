@@ -16,6 +16,7 @@ services:
 
   db:
     image: mysql:8.0
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     container_name: todo_db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
