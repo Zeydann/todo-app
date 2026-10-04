@@ -19,8 +19,14 @@ A weekly planner web app — plan your week, track a to-do list, jot notes, and 
 - **Pomodoro timer** — focus/break session timer
 
 ## Screenshots
-![Desktop view](screenshots/desktop-view.png)
-![Mobile view](screenshots/mobile-view.png)
+
+**Desktop view**
+
+<img src="screenshots/desktop-view.png" width="700" alt="Desktop view">
+
+**Mobile view**
+
+<img src="screenshots/mobile-view.png" width="300" alt="Mobile view">
 
 ## Credits
 
