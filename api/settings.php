@@ -1,11 +1,19 @@
 <?php
+session_start();
 header('Content-Type: application/json');
 require_once __DIR__ . "/../config.php";
+
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Unauthorized']);
+    exit;
+}
+$userId = (int)$_SESSION['user_id'];
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
-    $result = mysqli_query($conn, "SELECT * FROM settings");
+    $result = mysqli_query($conn, "SELECT * FROM settings WHERE user_id = $userId");
     $data = [];
     while ($row = mysqli_fetch_assoc($result)) {
         $data[$row['key']] = $row['value'];
@@ -26,7 +34,7 @@ if ($method === 'POST') {
         exit;
     }
 
-    mysqli_query($conn, "INSERT INTO settings (`key`, `value`) VALUES ('$key', '$value')
+    mysqli_query($conn, "INSERT INTO settings (user_id, `key`, `value`) VALUES ($userId, '$key', '$value')
         ON DUPLICATE KEY UPDATE `value` = '$value'");
     echo json_encode(['success' => true]);
     exit;

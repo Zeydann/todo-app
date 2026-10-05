@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . "/auth-check.php"; ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -10,13 +11,19 @@
 <body>
 
   <!-- ── Header ── -->
-  <div class="header">
-    <div class="header-left">
-      <h1>Weekly Planner</h1>
-      <p id="dateLabel">Minggu ini</p>
-    </div>
-    <div class="week-badge" id="weekBadge">Pekan —</div>
+<div class="header">
+  <div class="header-left">
+    <h1>Weekly Planner</h1>
+    <p id="dateLabel">Minggu ini</p>
   </div>
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <div class="week-badge" id="weekBadge">Pekan —</div>
+    <span style="font-size: 13px; color: var(--gray-400);">
+      Halo, <strong><?= htmlspecialchars($_SESSION['username']) ?></strong>
+    </span>
+    <a href="logout.php" style="font-size: 13px; color: var(--blue-400); text-decoration: none; font-weight: 500;">Keluar</a>
+  </div>
+</div>
 
   <!-- ── Quote Harian ── -->
   <div class="quote-card">
